@@ -14,57 +14,68 @@
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE FlexibleInstances          #-}
 
-module Database.Queries                 (addUser ,getUserByEmail ,getUserByKey 
-                                        ,assignToken ,getSecret ,removeToken
-                                        ,getMovie ,addMovieUnique, updMovie ,delMovie
-                                        ,getFavMovies)
+module Database.Queries                     (addUser ,getUserByEmail ,getUserByKey 
+                                            ,assignToken ,getSecret ,removeToken
+                                            ,getMovie ,addMovieUnique, updMovie ,delMovie
+                                            ,getFavMovies)
     where
 
-import Database.Type                    as DbT
+import Database.Type                        as DbT
 import Database.Persist
 import Database.Persist.Postgresql
 import Control.Monad.Reader
-import qualified Database.Esqueleto     as Esq
-import qualified Types                  as T
+import qualified Database.Esqueleto.Legacy  as Esq
+import qualified Types                      as T
 
 -- User :
 
-addUser :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => T.User -> ReaderT backend m (Maybe (Esq.Key DbT.User))
-addUser user            = insertUnique $ User (T.name user) (T.email user) (T.password user)
+addUser :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => 
+                    T.User -> ReaderT backend m (Maybe (Esq.Key DbT.User))
+addUser user                    = insertUnique $ User (T.name user) (T.email user) (T.password user)
 
-getUserByEmail :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => String -> ReaderT backend m (Maybe (Entity DbT.User))
-getUserByEmail email    = getBy $ UserPrimaryKey email
+getUserByEmail :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => 
+                    String -> ReaderT backend m (Maybe (Entity DbT.User))
+getUserByEmail email            = getBy $ UserPrimaryKey email
 
-getUserByKey :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => Esq.Key DbT.User -> ReaderT backend m (Maybe (Entity DbT.User))
-getUserByKey key        = getEntity key
+getUserByKey :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => 
+                    Esq.Key DbT.User -> ReaderT backend m (Maybe (Entity DbT.User))
+getUserByKey key                = getEntity key
 
 -- User Authentication: 
 
-assignToken :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => String -> String -> ReaderT backend m (Maybe ())
-assignToken userEmail newToken = insertUnique_ $ UserToken userEmail newToken
+assignToken :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => 
+                    String -> String -> ReaderT backend m (Maybe ())
+assignToken userEmail newToken  = insertUnique_ $ UserToken userEmail newToken
 
-removeToken :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistStoreWrite backend) => Esq.Key DbT.UserToken -> ReaderT backend m ()
-removeToken key = delete key
+removeToken :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistStoreWrite backend) => 
+                    Esq.Key DbT.UserToken -> ReaderT backend m ()
+removeToken key                 = delete key
 
-getSecret :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => String -> ReaderT backend m (Maybe (Entity DbT.UserToken))
-getSecret userEmail = getBy $ UserTokenPrimaryKey userEmail
+getSecret :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => 
+                    String -> ReaderT backend m (Maybe (Entity DbT.UserToken))
+getSecret userEmail             = getBy $ UserTokenPrimaryKey userEmail
 
 -- Movie
 
 -- checkMovieExists :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => String -> T.Movie ->  ReaderT backend m Bool
 -- checkMovieExists userEmail movie = existsBy $ MoviePrimaryKey (T.movieName movie) userEmail
 
-getMovie :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => String -> String -> ReaderT backend m (Maybe (Entity DbT.Movie))
-getMovie userEmail movieName = getBy $ MoviePrimaryKey movieName userEmail
+getMovie :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => 
+                    String -> String -> ReaderT backend m (Maybe (Entity DbT.Movie))
+getMovie userEmail movieName    = getBy $ MoviePrimaryKey movieName userEmail
 
-getFavMovies :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistQueryRead backend) => String -> ReaderT backend m [Entity DbT.Movie]
-getFavMovies userEmail       = selectList [MovieCreatedBy ==. userEmail] []
+getFavMovies :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistQueryRead backend) => 
+                    String -> ReaderT backend m [Entity DbT.Movie]
+getFavMovies userEmail          = selectList [MovieCreatedBy ==. userEmail] []
 
-addMovieUnique :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => String -> T.Movie -> ReaderT backend m (Maybe ())
-addMovieUnique userEmail movie    = insertUnique_ $ Movie (T.movieName movie) (T.rating movie) (T.genre movie) userEmail
+addMovieUnique :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => 
+                    String -> T.Movie -> ReaderT backend m (Maybe ())
+addMovieUnique userEmail movie  = insertUnique_ $ Movie (T.movieName movie) (T.rating movie) (T.genre movie) userEmail
 
-updMovie :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistStoreWrite backend) => Esq.Key DbT.Movie -> String -> T.Movie -> ReaderT backend m ()
-updMovie key userEmail movie = replace key $ Movie (T.movieName movie) (T.rating movie) (T.genre movie) userEmail
+updMovie :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistStoreWrite backend) => 
+                    Esq.Key DbT.Movie -> String -> T.Movie -> ReaderT backend m ()
+updMovie key userEmail movie    = replace key $ Movie (T.movieName movie) (T.rating movie) (T.genre movie) userEmail
 
-delMovie :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistStoreWrite backend) => Esq.Key DbT.Movie -> ReaderT backend m ()
-delMovie key = delete key
+delMovie :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistStoreWrite backend) => 
+                    Esq.Key DbT.Movie -> ReaderT backend m ()
+delMovie key                    = delete key

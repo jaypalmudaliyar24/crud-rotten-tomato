@@ -10,9 +10,6 @@ module Types
 
 import GHC.Generics         (Generic)
 import Data.Aeson           (ToJSON, FromJSON, toEncoding, genericToEncoding, defaultOptions)
-import Data.Time            (Day (ModifiedJulianDay))
-import Servant              (FromHttpApiData (parseQueryParam))
-import Data.Text            (Text, unpack)
 import qualified Data.Maybe as DM
 
 data Movie              = Movie

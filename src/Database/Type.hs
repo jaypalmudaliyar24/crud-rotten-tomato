@@ -8,6 +8,7 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE TypeOperators              #-}
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE UndecidableInstances       #-}
 {-# LANGUAGE DerivingStrategies         #-}
@@ -18,13 +19,9 @@
 
 module Database.Type                where
 
-import Database.Persist
-import Database.Persist.Postgresql
 import Database.Persist.TH
-import Data.Time                    (Day (ModifiedJulianDay))
-import qualified Types              as T
 
-import Data.Aeson                   (FromJSON, ToJSON(toJSON), parseJSON, (.:), (.:?), (.=), object, withObject)
+import Data.Aeson                   (FromJSON, ToJSON(toJSON), parseJSON, (.:), (.=), object, withObject)
 import GHC.Generics                 (Generic)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
@@ -53,9 +50,9 @@ Movie sql = movies
 instance ToJSON User 
     where
         toJSON (User name email password) = object $
-            (["name" .= name] ++
-            ["email" .= email] ++
-            ["password" .= password])
+            (["name"        .= name] ++
+            ["email"        .= email] ++
+            ["password"     .= password])
 
 instance FromJSON User 
     where
@@ -68,10 +65,10 @@ instance FromJSON User
 instance ToJSON Movie 
     where
         toJSON (Movie movieName rating genre createdBy) = object $
-            (["movieName" .= movieName] ++
-            ["rating" .= rating] ++
-            ["genre" .= genre] ++ 
-            ["createdBy" .= createdBy])
+            (["movieName"   .= movieName] ++
+            ["rating"       .= rating] ++
+            ["genre"        .= genre] ++ 
+            ["createdBy"    .= createdBy])
 
 instance FromJSON Movie 
     where
@@ -85,8 +82,8 @@ instance FromJSON Movie
 instance ToJSON UserToken
     where
         toJSON (UserToken userEmail secret) = object $
-            (["userEmail" .= userEmail] ++
-            ["secret" .= secret])
+            (["userEmail"   .= userEmail] ++
+            ["secret"       .= secret])
 
 instance FromJSON UserToken
     where

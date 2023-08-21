@@ -6,7 +6,8 @@
 {-# LANGUAGE UndecidableInstances  #-}
 {-# LANGUAGE DataKinds             #-}
 
-module BasicAuth                            where
+module BasicAuth                            (authCheck)
+	where
 import Data.Text                            (unpack)
 import Servant.API.BasicAuth                (BasicAuthData (BasicAuthData))
 import Servant.Server.Experimental.Auth     ()
@@ -16,8 +17,7 @@ import qualified Database.Type              as DbT
 import qualified Database.Functions         as DbF
 import Database.Persist                     (Entity(entityVal))
 import Servant.Server                       (BasicAuthCheck (BasicAuthCheck)
-                                            ,BasicAuthResult(Authorized, Unauthorized, NoSuchUser)
-                                            ,errBody)
+                                            ,BasicAuthResult(Authorized, Unauthorized, NoSuchUser))
 
 authCheck :: BasicAuthCheck T.UserForAuth
 authCheck =

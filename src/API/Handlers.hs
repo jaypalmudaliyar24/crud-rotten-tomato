@@ -15,11 +15,10 @@ import Prelude.Compat
 import Control.Monad.Except
 import qualified Database.Functions         as DbF
 import qualified Database.Type              as DbT
-import Database.Esqueleto                   (Entity(entityVal, entityKey))
+import Database.Esqueleto.Legacy            (Entity(entityVal, entityKey))
 import Types                                (Movie(..), User, UserForAuth(..))
 import Servant                              (Handler, NoContent, err400, err401, err404, err409, err500)
 import qualified Servant.API.ContentTypes   as SACT             
-import Data.Aeson                           (parseJSON)
 import System.Random                        as Rnd
 import Data.Char                            (chr)
 
@@ -27,78 +26,78 @@ tokenLength :: Int
 tokenLength = 20
 
 randomChar :: IO Char
-randomChar = do
-                randomInt <- Rnd.randomRIO (97, 122)
-                return $ chr randomInt
+randomChar                      = do
+                                    randomInt <- Rnd.randomRIO (97, 122)
+                                    return $ chr randomInt
 
 randomString :: Int -> IO String
-randomString n = sequence $ replicate n randomChar
+randomString n                  = sequence $ replicate n randomChar
 
 registerUser :: User -> Handler DbT.User
-registerUser user           = do
-                                x <- liftIO $ DbF.addUser user
-                                case x of
-                                    Nothing             -> throwError err409
-                                    Just createdUserKey -> do
-                                                            maybeUser <- liftIO $ DbF.getUserByKey createdUserKey
-                                                            case maybeUser of
-                                                                Nothing     -> throwError err404
-                                                                Just user   -> return (entityVal user)
+registerUser user               = do
+                                    x <- liftIO $ DbF.addUser user
+                                    case x of
+                                        Nothing             -> throwError err409
+                                        Just createdUserKey -> do
+                                                                maybeUser <- liftIO $ DbF.getUserByKey createdUserKey
+                                                                case maybeUser of
+                                                                    Nothing             -> throwError err404
+                                                                    Just createdUser    -> return (entityVal createdUser)
 
 loginUser :: Maybe String -> Maybe String -> Handler DbT.UserToken
-loginUser email password    = case email of
-                                Nothing -> throwError err400
-                                Just emailx -> case password of
-                                    Nothing -> throwError err400
-                                    Just passwordx -> do
-                                        x <- liftIO $ DbF.getUserByEmail emailx
-                                        case x of
-                                            Nothing -> throwError err400
-                                            Just user -> if DbT.userPassword (entityVal user) /= passwordx
-                                                then throwError err401
-                                                else do
-                                                        genToken <- liftIO $ randomString tokenLength
-                                                        res <- liftIO $ DbF.assignToken emailx genToken
-                                                        case res of
-                                                            Nothing -> throwError err500
-                                                            Just _  -> do
-                                                                        val <- liftIO $ DbF.getSecret emailx
-                                                                        case val of
-                                                                            Nothing -> throwError err500
-                                                                            Just userToken -> return (entityVal userToken)
+loginUser email password        = case email of
+                                    Nothing     -> throwError err400
+                                    Just emailx -> case password of
+                                        Nothing         -> throwError err400
+                                        Just passwordx  -> do
+                                                            x <- liftIO $ DbF.getUserByEmail emailx
+                                                            case x of
+                                                                Nothing     -> throwError err400
+                                                                Just user   -> if DbT.userPassword (entityVal user) /= passwordx
+                                                                                then throwError err401
+                                                                                else do
+                                                                                        genToken    <- liftIO $ randomString tokenLength
+                                                                                        res         <- liftIO $ DbF.assignToken emailx genToken
+                                                                                        case res of
+                                                                                            Nothing -> throwError err500
+                                                                                            Just _  -> do
+                                                                                                        val <- liftIO $ DbF.getSecret emailx
+                                                                                                        case val of
+                                                                                                            Nothing         -> throwError err500
+                                                                                                            Just userToken  -> return (entityVal userToken)
                             
 
 logoutUser :: UserForAuth -> Handler NoContent
-logoutUser userAuth = do
-                        let userEmail = emailAuth userAuth
-                        res <- liftIO $ DbF.getSecret userEmail
-                        case res of
-                            Nothing -> throwError err400
-                            Just userToken -> liftIO $ DbF.removeToken (entityKey userToken)
-                        return SACT.NoContent
+logoutUser userAuth             = do
+                                    let userEmail = emailAuth userAuth
+                                    res <- liftIO $ DbF.getSecret userEmail
+                                    case res of
+                                        Nothing         -> throwError err400
+                                        Just userToken  -> liftIO $ DbF.removeToken (entityKey userToken)
+                                    return SACT.NoContent
 
 getFavMovies :: UserForAuth -> Handler [DbT.Movie]
-getFavMovies userAuth    = do
-                            let userEmail = emailAuth userAuth
-                            movies <- liftIO $ DbF.getFavMovies userEmail
-                            return (map entityVal movies)
+getFavMovies userAuth           = do
+                                    let userEmail = emailAuth userAuth
+                                    movies <- liftIO $ DbF.getFavMovies userEmail
+                                    return (map entityVal movies)
 
 addFavMovie :: UserForAuth -> Movie -> Handler ()
-addFavMovie userAuth movie = do
-                                let userEmail = emailAuth userAuth
-                                res <- liftIO $ DbF.addMovieUnique userEmail movie
-                                case res of
-                                    Nothing -> throwError err400
-                                    Just x -> return x
+addFavMovie userAuth movie      = do
+                                    let userEmail = emailAuth userAuth
+                                    res <- liftIO $ DbF.addMovieUnique userEmail movie
+                                    case res of
+                                        Nothing -> throwError err400
+                                        Just x  -> return x
                                 
 
 updFavMovie :: UserForAuth -> Movie -> Handler ()
-updFavMovie userAuth movie = do
-                                let userEmail = emailAuth userAuth
-                                res <- liftIO $ DbF.getMovie userEmail (movieName movie)
-                                case res of
-                                    Nothing -> throwError err400
-                                    Just eMovie -> liftIO $ DbF.updMovie (entityKey eMovie) userEmail movie
+updFavMovie userAuth movie      = do
+                                    let userEmail = emailAuth userAuth
+                                    res <- liftIO $ DbF.getMovie userEmail (movieName movie)
+                                    case res of
+                                        Nothing -> throwError err400
+                                        Just eMovie -> liftIO $ DbF.updMovie (entityKey eMovie) userEmail movie
                                                         
 delFavMovie :: UserForAuth -> Maybe String -> Handler NoContent
 delFavMovie userAuth qMovieName = case qMovieName of
