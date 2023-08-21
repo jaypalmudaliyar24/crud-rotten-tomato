@@ -40,8 +40,8 @@ getUserByKey key        = getEntity key
 
 -- User Authentication: 
 
-assignToken :: BaseBackend backend ~ SqlBackend, MonadIO m, PersistQueryWrite backend) => String -> String -> ReaderT backend m (Maybe DbT.UserToken)
-assignToken userEmail newToken = insertUnique $ UserToken userEmail newToken
+assignToken :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => String -> String -> ReaderT backend m (Maybe ())
+assignToken userEmail newToken = insertUnique_ $ UserToken userEmail newToken
 
 getSecret :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => String -> ReaderT backend m (Maybe (Entity DbT.UserToken))
 getSecret userEmail = getBy $ UserTokenPrimaryKey userEmail

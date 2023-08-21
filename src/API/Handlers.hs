@@ -59,8 +59,14 @@ loginUser email password    = case email of
                                                 then throwError err401
                                                 else do
                                                         genToken <- liftIO $ randomString tokenLength
-                                                        liftIO $ DbF.assignToken email genToken
-                                                        liftIO $ DbF.getSecret email
+                                                        res <- liftIO $ DbF.assignToken emailx genToken
+                                                        case res of
+                                                            Nothing -> throwError err500
+                                                            Just _  -> do
+                                                                        val <- liftIO $ DbF.getSecret emailx
+                                                                        case val of
+                                                                            Nothing -> throwError err500
+                                                                            Just userToken -> return (entityVal userToken)
                             
 
 logoutUser :: User -> Handler User

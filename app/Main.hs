@@ -10,5 +10,5 @@ main :: IO ()
 main = do
     print "Server Started"
     x <- DbF.migrationScript
-    print "Ran Migrations " ++ show x
+    print ("Ran Migrations " ++ show x)
     run 8081 (serveWithContext basicAuthApi (authCheck :. EmptyContext) server)

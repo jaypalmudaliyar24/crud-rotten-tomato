@@ -46,6 +46,7 @@ dependencies:
 - monad-logger
 - esqueleto
 - postgresql-simple
+- random
 
 ghc-options:
 - -Wall

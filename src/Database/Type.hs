@@ -91,6 +91,6 @@ instance ToJSON UserToken
 instance FromJSON UserToken
     where
         parseJSON = withObject "UserToken" $ \obj ->
-            User
+            UserToken
                 <$> obj .: "userEmail"
                 <*> obj .: "secret"
