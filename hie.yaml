@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "crud-rotten-tomato:lib"
+
+    - path: "./app/Main.hs"
+      component: "crud-rotten-tomato:exe:crud-rotten-tomato-exe"
+
+    - path: "./app/Paths_crud_rotten_tomato.hs"
+      component: "crud-rotten-tomato:exe:crud-rotten-tomato-exe"
+
+    - path: "./test"
+      component: "crud-rotten-tomato:test:crud-rotten-tomato-test"
