@@ -15,7 +15,7 @@
 {-# LANGUAGE FlexibleInstances          #-}
 
 module Database.Queries                 (addUser ,getUserByEmail ,getUserByKey 
-                                        ,assignToken ,getSecret
+                                        ,assignToken ,getSecret ,removeToken
                                         ,getMovie ,addMovieUnique, updMovie ,delMovie
                                         ,getFavMovies)
     where
@@ -42,6 +42,9 @@ getUserByKey key        = getEntity key
 
 assignToken :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => String -> String -> ReaderT backend m (Maybe ())
 assignToken userEmail newToken = insertUnique_ $ UserToken userEmail newToken
+
+removeToken :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistStoreWrite backend) => Esq.Key DbT.UserToken -> ReaderT backend m ()
+removeToken key = delete key
 
 getSecret :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => String -> ReaderT backend m (Maybe (Entity DbT.UserToken))
 getSecret userEmail = getBy $ UserTokenPrimaryKey userEmail

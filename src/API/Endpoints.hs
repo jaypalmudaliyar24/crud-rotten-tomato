@@ -6,17 +6,12 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 
 module API.Endpoints
-                                (UserRegister
-                                ,UserLogin
-                                -- ,UserLogout
-                                ,AddFavMovie
-                                ,basicAuthApi
+                                (basicAuthApi
                                 ,server)
     where
 
 
-import API.Handlers             (registerUser ,loginUser 
-                                -- ,logoutUser 
+import API.Handlers             (registerUser ,loginUser ,logoutUser 
                                 ,getFavMovies ,addFavMovie ,updFavMovie ,delFavMovie)
 import Prelude                  ()
 import Prelude.Compat
@@ -31,7 +26,9 @@ type UserRegister       = "register"    :> ReqBody '[JSON] User :> PostCreated '
 type UserLogin          = "login"       :> QueryParam "email" String 
                                         :> QueryParam "password" String :> Get '[JSON] DbT.UserToken
 
--- type UserLogout         = BasicAuth "user-realm" User :> "logout" :> Get '[JSON] DbT.User
+type UserLogout         = BasicAuth "user-realm" UserForAuth :> "logout" :> DeleteNoContent
+
+-- User Movie
 
 type GetFavMovie        = BasicAuth "user-realm" UserForAuth :>
                         "getFavMovie"   :> Get '[JSON] [DbT.Movie]
@@ -44,7 +41,7 @@ type DeleteFavMovie     = BasicAuth "user-realm" UserForAuth :>
 
 type UserApi            = UserRegister 
                         :<|> UserLogin
-                        -- :<|> UserLogout 
+                        :<|> UserLogout
                         :<|> GetFavMovie
                         :<|> AddFavMovie
                         :<|> UpdateFavMovie
@@ -56,7 +53,7 @@ type CombinedAPI        = "user"        :> UserApi
 userServer              :: Server UserApi
 userServer              = registerUser 
                         :<|> loginUser 
-                        -- :<|> logoutUser
+                        :<|> logoutUser
                         :<|> getFavMovies
                         :<|> addFavMovie
                         :<|> updFavMovie

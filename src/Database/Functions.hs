@@ -1,5 +1,5 @@
 module Database.Functions           (addUser ,getUserByEmail ,getUserByKey 
-                                    ,assignToken ,getSecret
+                                    ,assignToken ,getSecret ,removeToken
                                     ,getMovie ,addMovieUnique ,updMovie ,delMovie
                                     ,getFavMovies
                                     ,migrationScript)
@@ -47,6 +47,9 @@ assignToken userEmail newToken = runAction $ DbQ.assignToken userEmail newToken
 
 getSecret :: String -> IO (Maybe (Entity DbT.UserToken))
 getSecret userEmail = runAction $ DbQ.getSecret userEmail
+
+removeToken :: Esq.Key DbT.UserToken -> IO ()
+removeToken key = runAction $ DbQ.removeToken key
 
 -- Movie
 

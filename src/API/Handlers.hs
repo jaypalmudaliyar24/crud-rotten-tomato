@@ -6,8 +6,7 @@
 {-# LANGUAGE DataKinds             #-}
 
 module API.Handlers     
-                                            (registerUser ,loginUser
-                                            -- ,logoutUser
+                                            (registerUser ,loginUser ,logoutUser
                                             ,getFavMovies ,addFavMovie ,updFavMovie ,delFavMovie)
     where
 
@@ -69,8 +68,14 @@ loginUser email password    = case email of
                                                                             Just userToken -> return (entityVal userToken)
                             
 
-logoutUser :: User -> Handler User
-logoutUser user = error "TODO : Implement 'addFavMovie'"
+logoutUser :: UserForAuth -> Handler NoContent
+logoutUser userAuth = do
+                        let userEmail = emailAuth userAuth
+                        res <- liftIO $ DbF.getSecret userEmail
+                        case res of
+                            Nothing -> throwError err400
+                            Just userToken -> liftIO $ DbF.removeToken (entityKey userToken)
+                        return SACT.NoContent
 
 getFavMovies :: UserForAuth -> Handler [DbT.Movie]
 getFavMovies userAuth    = do
