@@ -35,6 +35,12 @@ User sql = users
     Primary email
     deriving Show Read Generic
 
+UserToken sql = user_tokens
+    userEmail String
+    secret String
+    Primary userEmail
+    deriving Show Read Generic
+
 Movie sql = movies
     name String
     rating Double Maybe
@@ -75,3 +81,16 @@ instance FromJSON Movie
                 <*> obj .: "rating"
                 <*> obj .: "genre"
                 <*> obj .: "createdBy"
+
+instance ToJSON UserToken
+    where
+        toJSON (UserToken userEmail secret) = object $
+            (["userEmail" .= userEmail] ++
+            ["secret" .= secret])
+
+instance FromJSON UserToken
+    where
+        parseJSON = withObject "UserToken" $ \obj ->
+            User
+                <$> obj .: "userEmail"
+                <*> obj .: "secret"

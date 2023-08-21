@@ -29,7 +29,7 @@ import qualified Database.Type  as DbT
 type UserRegister       = "register"    :> ReqBody '[JSON] User :> PostCreated '[JSON] DbT.User
 
 type UserLogin          = "login"       :> QueryParam "email" String 
-                                        :> QueryParam "password" String :> Get '[JSON] DbT.User
+                                        :> QueryParam "password" String :> Get '[JSON] DbT.UserToken
 
 -- type UserLogout         = BasicAuth "user-realm" User :> "logout" :> Get '[JSON] DbT.User
 

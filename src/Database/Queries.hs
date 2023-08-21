@@ -14,7 +14,8 @@
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE FlexibleInstances          #-}
 
-module Database.Queries                 (addUser ,getUserByEmail ,getUserByKey
+module Database.Queries                 (addUser ,getUserByEmail ,getUserByKey 
+                                        ,assignToken ,getSecret
                                         ,getMovie ,addMovieUnique, updMovie ,delMovie
                                         ,getFavMovies)
     where
@@ -26,6 +27,8 @@ import Control.Monad.Reader
 import qualified Database.Esqueleto     as Esq
 import qualified Types                  as T
 
+-- User :
+
 addUser :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueWrite backend) => T.User -> ReaderT backend m (Maybe (Esq.Key DbT.User))
 addUser user            = insertUnique $ User (T.name user) (T.email user) (T.password user)
 
@@ -34,6 +37,14 @@ getUserByEmail email    = getBy $ UserPrimaryKey email
 
 getUserByKey :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => Esq.Key DbT.User -> ReaderT backend m (Maybe (Entity DbT.User))
 getUserByKey key        = getEntity key
+
+-- User Authentication: 
+
+assignToken :: BaseBackend backend ~ SqlBackend, MonadIO m, PersistQueryWrite backend) => String -> String -> ReaderT backend m (Maybe DbT.UserToken)
+assignToken userEmail newToken = insertUnique $ UserToken userEmail newToken
+
+getSecret :: (BaseBackend backend ~ SqlBackend, MonadIO m, PersistUniqueRead backend) => String -> ReaderT backend m (Maybe (Entity DbT.UserToken))
+getSecret userEmail = getBy $ UserTokenPrimaryKey userEmail
 
 -- Movie
 

@@ -31,6 +31,7 @@ data User               = User
                             name :: String
                             ,email :: String
                             ,password :: String
+                            ,token :: Maybe String
                         } deriving (Show, Generic)
 instance                ToJSON User
     where

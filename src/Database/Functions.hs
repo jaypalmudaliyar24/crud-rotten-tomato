@@ -1,4 +1,5 @@
-module Database.Functions           (addUser ,getUserByEmail ,getUserByKey
+module Database.Functions           (addUser ,getUserByEmail ,getUserByKey 
+                                    ,assignToken ,getSecret
                                     ,getMovie ,addMovieUnique ,updMovie ,delMovie
                                     ,getFavMovies
                                     ,migrationScript)
@@ -38,6 +39,14 @@ getUserByKey userKey    = runAction $ DbQ.getUserByKey userKey
 
 getUserByEmail :: String -> IO (Maybe (Entity DbT.User))
 getUserByEmail email    = runAction $ DbQ.getUserByEmail email
+
+-- User Authentication
+
+assignToken :: String -> String -> IO (Maybe ())
+assignToken userEmail newToken = runAction $ DbQ.assignToken userEmail newToken
+
+getSecret :: String -> IO (Maybe (Entity DbT.UserToken))
+getSecret userEmail = runAction $ DbQ.getSecret userEmail
 
 -- Movie
 

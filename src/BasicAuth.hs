@@ -22,11 +22,11 @@ import Servant.Server                       (BasicAuthCheck (BasicAuthCheck)
 authCheck :: BasicAuthCheck T.UserForAuth
 authCheck =
   let 
-    check (BasicAuthData email password ) = do
-      x <- DbF.getUserByEmail $ unpack (decodeUtf8 email)
+    check (BasicAuthData email secret) = do
+      x <- DbF.getSecret $ unpack (decodeUtf8 email)
       case x of
-        Just user -> if unpack (decodeUtf8 email) == DbT.userEmail (entityVal user) && unpack (decodeUtf8 password) == DbT.userPassword (entityVal user)
-          then return (Authorized (T.UserForAuth{T.emailAuth = DbT.userEmail (entityVal user) }) )
+        Just userToken -> if unpack (decodeUtf8 email) == DbT.userTokenUserEmail (entityVal userToken) && unpack (decodeUtf8 secret) == DbT.userTokenSecret (entityVal userToken)
+          then return (Authorized (T.UserForAuth{T.emailAuth = DbT.userTokenUserEmail (entityVal userToken) }) )
           else return Unauthorized
         Nothing ->  return NoSuchUser
   in BasicAuthCheck check

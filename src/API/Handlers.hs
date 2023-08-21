@@ -21,7 +21,20 @@ import Types                                (Movie(..), User, UserForAuth(..))
 import Servant                              (Handler, NoContent, err400, err401, err404, err409, err500)
 import qualified Servant.API.ContentTypes   as SACT             
 import Data.Aeson                           (parseJSON)
-                        
+import System.Random                        as Rnd
+import Data.Char                            (chr)
+
+tokenLength :: Int
+tokenLength = 20
+
+randomChar :: IO Char
+randomChar = do
+                randomInt <- Rnd.randomRIO (97, 122)
+                return $ chr randomInt
+
+randomString :: Int -> IO String
+randomString n = sequence $ replicate n randomChar
+
 registerUser :: User -> Handler DbT.User
 registerUser user           = do
                                 x <- liftIO $ DbF.addUser user
@@ -33,19 +46,21 @@ registerUser user           = do
                                                                 Nothing     -> throwError err404
                                                                 Just user   -> return (entityVal user)
 
-loginUser :: Maybe String -> Maybe String -> Handler DbT.User
-loginUser email password    = do
-                                case email of
+loginUser :: Maybe String -> Maybe String -> Handler DbT.UserToken
+loginUser email password    = case email of
+                                Nothing -> throwError err400
+                                Just emailx -> case password of
                                     Nothing -> throwError err400
-                                    Just emailx -> case password of
-                                        Nothing -> throwError err400
-                                        Just passwordx -> do
-                                            x <- liftIO $ DbF.getUserByEmail emailx
-                                            case x of
-                                                Nothing -> throwError err400
-                                                Just user -> if DbT.userPassword (entityVal user) == passwordx
-                                                    then return (entityVal user)
-                                                    else throwError err401
+                                    Just passwordx -> do
+                                        x <- liftIO $ DbF.getUserByEmail emailx
+                                        case x of
+                                            Nothing -> throwError err400
+                                            Just user -> if DbT.userPassword (entityVal user) /= passwordx
+                                                then throwError err401
+                                                else do
+                                                        genToken <- liftIO $ randomString tokenLength
+                                                        liftIO $ DbF.assignToken email genToken
+                                                        liftIO $ DbF.getSecret email
                             
 
 logoutUser :: User -> Handler User
